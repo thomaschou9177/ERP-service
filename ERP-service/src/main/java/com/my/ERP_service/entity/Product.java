@@ -1,42 +1,42 @@
 package com.my.ERP_service.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "product")
-@Getter @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "pn")
-    private String pn; // Part Number
-
-    @Column(name = "m_lot")
-    private String mLot; // Manufacturing Lot
-
-    @Column(name = "expired_date")
+    private String pn;
+    private String mLot;
     private LocalDate expiredDate;
-
     private BigDecimal cost;
-
-    @Column(name = "stock_qt")
     private Integer stockQt;
-
     private BigDecimal price;
 
-    // Nullable fields for future use
-    @Column(name = "sales_qt", nullable = true)
-    private Integer salesQt;
+    // Manual No-Args Constructor
+    public Product() {}
 
-    @Column(name = "add_qt", nullable = true)
-    private Integer addQt;
+    // Manual Getters and Setters (This fixes the 'cannot find symbol' in your Service)
+    public String getPn() { return pn; }
+    public void setPn(String pn) { this.pn = pn; }
+
+    public String getMLot() { return mLot; }
+    public void setMLot(String mLot) { this.mLot = mLot; }
+
+    public LocalDate getExpiredDate() { return expiredDate; }
+    public void setExpiredDate(LocalDate expiredDate) { this.expiredDate = expiredDate; }
+
+    public BigDecimal getCost() { return cost; }
+    public void setCost(BigDecimal cost) { this.cost = cost; }
+
+    public Integer getStockQt() { return stockQt; }
+    public void setStockQt(Integer stockQt) { this.stockQt = stockQt; }
+
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 }

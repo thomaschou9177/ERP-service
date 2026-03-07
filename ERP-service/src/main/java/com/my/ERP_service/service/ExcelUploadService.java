@@ -26,17 +26,25 @@ public class ExcelUploadService {
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue; // Skip empty rows
+                if (row == null) continue;
 
-                products.add(Product.builder()
-                        .pn(getCellValueAsString(row.getCell(0)))
-                        .mLot(getCellValueAsString(row.getCell(1)))
-                        .expiredDate(row.getCell(2) != null ? row.getCell(2).getDateCellValue()
-                                .toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null)
-                        .cost(getCellValueAsBigDecimal(row.getCell(3)))
-                        .stockQt(getCellValueAsInt(row.getCell(4)))
-                        .price(getCellValueAsBigDecimal(row.getCell(5)))
-                        .build());
+                // Create a new Product object manually
+                Product product = new Product();
+
+                // Use Setters to assign values instead of .builder()
+                product.setPn(getCellValueAsString(row.getCell(0)));
+                product.setMLot(getCellValueAsString(row.getCell(1)));
+
+                if (row.getCell(2) != null) {
+                    product.setExpiredDate(row.getCell(2).getDateCellValue()
+                            .toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                }
+
+                product.setCost(getCellValueAsBigDecimal(row.getCell(3)));
+                product.setStockQt(getCellValueAsInt(row.getCell(4)));
+                product.setPrice(getCellValueAsBigDecimal(row.getCell(5)));
+
+                products.add(product);
             }
             productRepository.saveAll(products);
         }

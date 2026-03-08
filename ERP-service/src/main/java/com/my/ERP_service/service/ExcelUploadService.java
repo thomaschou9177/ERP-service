@@ -53,8 +53,20 @@ public class ExcelUploadService {
     // --- Safe Helper Methods ---
 
     private String getCellValueAsString(Cell cell) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) return "";
-        return cell.getStringCellValue().trim();
+        if (cell == null) return "";
+
+        // Check what kind of data is in the cell
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                // This converts the number 100 to the string "100"
+                return String.valueOf((int) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
+        }
     }
 
     private BigDecimal getCellValueAsBigDecimal(Cell cell) {

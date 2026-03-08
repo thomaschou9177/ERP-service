@@ -55,15 +55,21 @@ public class ExcelUploadService {
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
 
-        // Check what kind of data is in the cell
         switch (cell.getCellType()) {
             case STRING:
-                return cell.getStringCellValue();
+                return cell.getStringCellValue().trim();
             case NUMERIC:
-                // This converts the number 100 to the string "100"
-                return String.valueOf((int) cell.getNumericCellValue());
+                // This safely handles numbers and prevents the "Cannot get STRING" error
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                }
+                // Use DataFormatter to get exactly what you see in the Excel cell
+                DataFormatter formatter = new DataFormatter();
+                return formatter.formatCellValue(cell);
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
             default:
                 return "";
         }

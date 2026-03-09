@@ -24,32 +24,36 @@ public class ExcelUploadService {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
 
+            // Start from i = 1 to skip the header row
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
                 Product product = new Product();
 
-                // PN is Column B (1), M Lot is Column C (2)
-                product.setPn(getCellValueAsString(row.getCell(1)));
-                product.setMLot(getCellValueAsString(row.getCell(2)));
+                // 1. Explicitly set the ID from Column A (Index 0)
+                // This ensures your DB ID matches the Excel ID (1, 2, 3...)
+                String idStr = cleanNumericString(getCellValueAsString(row.getCell(0)));
+                if (!idStr.isEmpty()) {
+                    product.setId(Long.parseLong(idStr));
+                }
 
-                // Expired Date is Column D (3)
+                // 2. Map other columns in the exact order of the Excel file
+                product.setPn(getCellValueAsString(row.getCell(1)));          // Column B
+                product.setMLot(getCellValueAsString(row.getCell(2)));        // Column C
+
                 if (row.getCell(3) != null && DateUtil.isCellDateFormatted(row.getCell(3))) {
-                    product.setExpiredDate(row.getCell(3).getDateCellValue()
+                    product.setExpiredDate(row.getCell(3).getDateCellValue()  // Column D
                             .toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 }
 
-                // Cost is Column E (4) - Use helper to strip '$'
-                String costStr = cleanNumericString(getCellValueAsString(row.getCell(4)));
+                String costStr = cleanNumericString(getCellValueAsString(row.getCell(4))); // Column E
                 product.setCost(new BigDecimal(costStr.isEmpty() ? "0" : costStr));
 
-                // Stock Qt is Column F (5) - Use helper to handle "10K"
-                String stockStr = getCellValueAsString(row.getCell(5));
+                String stockStr = getCellValueAsString(row.getCell(5));       // Column F
                 product.setStockQt(parseStockQuantity(stockStr));
 
-                // Price is Column G (6)
-                String priceStr = cleanNumericString(getCellValueAsString(row.getCell(6)));
+                String priceStr = cleanNumericString(getCellValueAsString(row.getCell(6))); // Column G
                 product.setPrice(new BigDecimal(priceStr.isEmpty() ? "0" : priceStr));
 
                 products.add(product);

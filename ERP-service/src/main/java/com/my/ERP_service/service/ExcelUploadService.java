@@ -28,21 +28,29 @@ public class ExcelUploadService {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
-                // Create a new Product object manually
                 Product product = new Product();
 
-                // Use Setters to assign values instead of .builder()
-                product.setPn(getCellValueAsString(row.getCell(0)));
-                product.setMLot(getCellValueAsString(row.getCell(1)));
+                // PN is Column B (1), M Lot is Column C (2)
+                product.setPn(getCellValueAsString(row.getCell(1)));
+                product.setMLot(getCellValueAsString(row.getCell(2)));
 
-                if (row.getCell(2) != null) {
-                    product.setExpiredDate(row.getCell(2).getDateCellValue()
+                // Expired Date is Column D (3)
+                if (row.getCell(3) != null && DateUtil.isCellDateFormatted(row.getCell(3))) {
+                    product.setExpiredDate(row.getCell(3).getDateCellValue()
                             .toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 }
 
-                product.setCost(getCellValueAsBigDecimal(row.getCell(3)));
-                product.setStockQt(getCellValueAsInt(row.getCell(4)));
-                product.setPrice(getCellValueAsBigDecimal(row.getCell(5)));
+                // Cost is Column E (4) - Use helper to strip '$'
+                String costStr = cleanNumericString(getCellValueAsString(row.getCell(4)));
+                product.setCost(new BigDecimal(costStr.isEmpty() ? "0" : costStr));
+
+                // Stock Qt is Column F (5) - Use helper to handle "10K"
+                String stockStr = getCellValueAsString(row.getCell(5));
+                product.setStockQt(parseStockQuantity(stockStr));
+
+                // Price is Column G (6)
+                String priceStr = cleanNumericString(getCellValueAsString(row.getCell(6)));
+                product.setPrice(new BigDecimal(priceStr.isEmpty() ? "0" : priceStr));
 
                 products.add(product);
             }
@@ -74,14 +82,25 @@ public class ExcelUploadService {
                 return "";
         }
     }
-
-    private BigDecimal getCellValueAsBigDecimal(Cell cell) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) return BigDecimal.ZERO;
-        return BigDecimal.valueOf(cell.getNumericCellValue());
+    private String cleanNumericString(String value) {
+        if (value == null) return "0";
+        // Removes everything except numbers and the decimal point
+        return value.replaceAll("[^\\d.]", "");
     }
 
-    private Integer getCellValueAsInt(Cell cell) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) return 0;
-        return (int) cell.getNumericCellValue();
+    private Integer parseStockQuantity(String value) {
+        if (value == null || value.isEmpty()) return 0;
+
+        value = value.toUpperCase().trim();
+        try {
+            if (value.endsWith("K")) {
+                float num = Float.parseFloat(value.replace("K", ""));
+                return (int) (num * 1000);
+            }
+            return Integer.parseInt(value.replaceAll("[^\\d]", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
+
 }

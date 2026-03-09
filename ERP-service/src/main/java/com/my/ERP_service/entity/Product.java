@@ -24,6 +24,10 @@ public class Product {
     // Manual No-Args Constructor
     public Product() {}
     // Manual Getters and Setters (This fixes the 'cannot find symbol' in your Service)
+
+        public Long getId() {
+            return id;
+        }
         public void setId(Long id) {
             this.id = id;
         }

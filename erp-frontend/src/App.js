@@ -5,35 +5,48 @@ import ProductList from './components/ProductList';
 import axios from 'axios'; // Ensure you have axios installed: npm install axios
 
 function App() {
+  // 1. Initialize state from localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+
   const [products, setProducts] = useState([]);
 
-  // Function to fetch products from your backend
+  // 2. Watch for changes in login status and update localStorage
+  useEffect(() => {
+    localStorage.setItem('isLoggedIn', isLoggedIn);
+    if (isLoggedIn) {
+      fetchProducts();
+    }
+  }, [isLoggedIn]);
+
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/products'); // Update with your actual API URL
+      const response = await axios.get('http://localhost:8080/api/products');
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
 
-  // Fetch data on initial load
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('isLoggedIn'); // Clear storage on logout
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLoginSuccess={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div className="App">
-      <header className="App-header">
+      <header className="App-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '0 20px' }}>
         <h1>ERP Inventory System</h1>
+        <button onClick={handleLogout} style={{ margin: '20px' }}>Logout</button>
       </header>
       <main>
-        {/* Pass the refresh function to the uploader so it updates the list after upload */}
         <ExcelUpload onUploadSuccess={fetchProducts} />
-
         <hr />
-
-        {/* Pass the actual products array to the list component */}
         <ProductList products={products} />
       </main>
     </div>

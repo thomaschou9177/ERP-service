@@ -50,7 +50,7 @@ public class ProductController {
         }
     }
     // 2. ADD THIS GET METHOD to fix the display issue
-    @GetMapping
+    @GetMapping("/products")
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }

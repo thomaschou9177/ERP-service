@@ -20,7 +20,7 @@ const ExcelUpload = ({ onUploadSuccess }) => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/products/upload', formData, {
+            const response = await axios.post('http://localhost:8080/api/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 

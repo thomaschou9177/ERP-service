@@ -5,10 +5,12 @@ import com.my.ERP_service.entity.Product;
 import com.my.ERP_service.service.ExcelUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -53,5 +55,20 @@ public class ProductController {
     @GetMapping("/products")
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    @GetMapping("/search")
+    public List<Product> searchProducts(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String pn,
+            @RequestParam(value="m_lot",required = false) String mLot,
+            @RequestParam(value = "expired_date",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiredDate,
+            @RequestParam(required = false) Double cost,
+            @RequestParam(value="stock_qt",required = false) Integer stockQt,
+            @RequestParam(required = false) Double price,
+            @RequestParam(value="sales_qt",required = false) Integer salesQt,
+            @RequestParam(value="add_qt",required = false) Integer addQt) {
+
+            return productRepository.findByAdvancedFilters(id, pn, mLot, expiredDate, cost, stockQt, price, salesQt, addQt);
     }
 }
